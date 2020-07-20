@@ -37,6 +37,20 @@ defmodule Poeticoins.Exchanges.CoinbaseClient do
     {:noreply, state}
   end
 
+  def handle_info({:gun_ws, conn, _ref, {:text, msg}=_frame}, %{conn: conn}=state) do
+    handle_ws_message(Jason.decode!(msg), state)
+  end
+
+  def handle_ws_message(%{"type" => "ticker"}=msg, state) do
+    IO.inspect(msg, label: "ticker")
+    {:noreply, state}
+  end
+
+  def handle_ws_message(msg, state) do
+    IO.inspect(msg, label: "unhandled message")
+    {:noreply, state}
+  end
+
   defp subscribe(state) do
     subscription_frames(state.currency_pairs)
     |> Enum.each(&:gun.ws_send(state.conn, &1))
