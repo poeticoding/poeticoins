@@ -13,7 +13,4 @@ defmodule Poeticoins.Product do
     }
   end
 
-  def coinbase(currency_pair) do
-    new(:coinbase, currency_pair)
-  end
 end
