@@ -1,5 +1,5 @@
 defmodule Poeticoins.Exchanges.CoinbaseClient do
-  alias Poeticoins.{Trade, Product}
+  alias Poeticoins.{Trade, Product, Exchanges}
   alias Poeticoins.Exchanges.Client
   require Client
 
@@ -23,7 +23,9 @@ defmodule Poeticoins.Exchanges.CoinbaseClient do
 
   @impl true
   def handle_ws_message(%{"type" => "ticker"}=msg, state) do
-    _trade = message_to_trade(msg) |> IO.inspect(label: "coinbase")
+    {:ok, trade} = message_to_trade(msg)
+    Exchanges.broadcast(trade)
+
     {:noreply, state}
   end
 
@@ -39,12 +41,13 @@ defmodule Poeticoins.Exchanges.CoinbaseClient do
          {:ok, traded_at, _} <- DateTime.from_iso8601(msg["time"])
     do
       currency_pair = msg["product_id"]
+      {:ok,
       Trade.new(
         product: Product.new(exchange_name(), currency_pair),
         price: msg["price"],
         volume: msg["last_size"],
         traded_at: traded_at
-      )
+      )}
     else
       {:error, _reason}=error -> error
     end
