@@ -1,6 +1,23 @@
 defmodule Poeticoins.Exchanges do
   alias Poeticoins.{Product, Trade}
 
+  @clients [
+    Poeticoins.Exchanges.CoinbaseClient,
+    Poeticoins.Exchanges.BitstampClient
+  ]
+
+  @available_products @clients |> Enum.flat_map(fn client ->
+      exchange = client.exchange_name()
+      client.available_currency_pairs()
+      |> Enum.map(& Product.new(exchange, &1))
+    end)
+
+  @spec clients() :: [module()]
+  def clients, do: @clients
+
+  @spec available_products() :: [Product.t()]
+  def available_products(), do: @available_products
+
   @spec subscribe(Product.t()) :: :ok | {:error, term()}
   def subscribe(product) do
     Phoenix.PubSub.subscribe(Poeticoins.PubSub, topic(product))
