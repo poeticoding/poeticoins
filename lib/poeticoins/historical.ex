@@ -35,7 +35,7 @@ defmodule Poeticoins.Historical do
     {:noreply, updated_historical}
   end
 
-  def handle_call({:get_last_trade, product}, historical) do
+  def handle_call({:get_last_trade, product}, _from, historical) do
     trade = Map.get(historical.trades, product)
     {:reply, trade, historical}
   end
