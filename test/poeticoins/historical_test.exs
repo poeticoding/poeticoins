@@ -7,6 +7,7 @@ defmodule Poeticoins.HistoricalTest do
       {:ok, pid} = Historical.start_link(products: all_products())
       [historical: pid]
     end
+
     test "returns the most recent trade", %{historical: historical} do
       product = Product.new("coinbase", "BTC-USD")
       assert nil == Historical.get_last_trade(historical, product)
@@ -15,6 +16,13 @@ defmodule Poeticoins.HistoricalTest do
       trade = build_valid_trade(product)
       broadcast_trade(trade)
       assert trade == Historical.get_last_trade(historical, product)
+
+      new_trade = build_valid_trade(product)
+      assert :gt == DateTime.compare(new_trade.traded_at, trade.traded_at)
+
+      broadcast_trade(new_trade)
+      assert new_trade == Historical.get_last_trade(historical, product)
+
     end
   end
 
