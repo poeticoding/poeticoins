@@ -6,11 +6,9 @@ defmodule Poeticoins.Exchanges do
     Poeticoins.Exchanges.BitstampClient
   ]
 
-  @available_products @clients |> Enum.flat_map(fn client ->
-      exchange = client.exchange_name()
-      client.available_currency_pairs()
-      |> Enum.map(& Product.new(exchange, &1))
-    end)
+  @available_products (for client <- @clients, pair <- client.available_currency_pairs() do
+    Product.new(client.exchange_name(), pair)
+  end)
 
   @spec clients() :: [module()]
   def clients, do: @clients
