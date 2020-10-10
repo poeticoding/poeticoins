@@ -8,6 +8,7 @@ defmodule Poeticoins.Exchanges do
 
   @available_products (for client <- @clients, pair <- client.available_currency_pairs() do
     Product.new(client.exchange_name(), pair)
+
   end)
 
   @spec clients() :: [module()]

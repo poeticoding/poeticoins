@@ -3,27 +3,50 @@ defmodule Poeticoins.HistoricalTest do
   alias Poeticoins.{Historical, Exchanges, Product, Trade}
 
 
-  setup do
-    {:ok, hist_all} = Historical.start_link(products: all_products())
-    {:ok, hist_coinbase} = Historical.start_link(products: all_coinbase_products())
-    [hist_all: hist_all, hist_coinbase: hist_coinbase]
+  setup :start_fresh_historical_with_all_products
+  setup :start_fresh_historical_with_all_coinbase_products
+  setup :start_historical_with_trades_for_all_products
+
+  describe "get_last_trade/2" do
+    test "gets the most recent trade for a product", %{hist_all: historical} do
+      product = Product.new("coinbase", "BTC-USD")
+      assert nil == Historical.get_last_trade(historical, product)
+
+      #broadcasting the trade
+      trade = build_valid_trade(product)
+      broadcast_trade(trade)
+      assert trade == Historical.get_last_trade(historical, product)
+
+      new_trade = build_valid_trade(product)
+      assert :gt == DateTime.compare(new_trade.traded_at, trade.traded_at)
+
+      broadcast_trade(new_trade)
+      assert new_trade == Historical.get_last_trade(historical, product)
+
+    end
   end
 
-  test "get_last_trade/2 returns the most recent trade", %{hist_all: historical} do
-    product = Product.new("coinbase", "BTC-USD")
-    assert nil == Historical.get_last_trade(historical, product)
+  describe "get_last_trades/2" do
+    test "given a list of products, returns a list of most recent trades", %{hist_with_trades: historical} do
+      products =
+        Exchanges.available_products()
+        |> Enum.shuffle()
 
-    #broadcasting the trade
-    trade = build_valid_trade(product)
-    broadcast_trade(trade)
-    assert trade == Historical.get_last_trade(historical, product)
+      assert products ==
+        historical
+        |> Historical.get_last_trades(products)
+        |> Enum.map(fn %Trade{product: p} -> p end)
+    end
 
-    new_trade = build_valid_trade(product)
-    assert :gt == DateTime.compare(new_trade.traded_at, trade.traded_at)
+    test "nil in the returned list when the Historical doesn't have a trade for product", %{hist_with_trades: historical} do
+      products = [
+        Product.new("coinbase", "BTC-USD"),
+        Product.new("coinbase", "invalid_pair"),
+        Product.new("bitstamp", "btcusd")
+      ]
 
-    broadcast_trade(new_trade)
-    assert new_trade == Historical.get_last_trade(historical, product)
-
+      assert [%Trade{}, nil, %Trade{}] = Historical.get_last_trades(historical, products)
+    end
   end
 
   test "keeps track of the trades for only the :products passed when started", %{hist_coinbase: hist_coinbase} do
@@ -65,5 +88,23 @@ defmodule Poeticoins.HistoricalTest do
       price: "10000.00",
       volume: "0.10000"
     }
+  end
+
+
+  defp start_fresh_historical_with_all_products(_context) do
+    {:ok, hist_all} = Historical.start_link(products: all_products())
+    [hist_all: hist_all]
+  end
+
+  defp start_fresh_historical_with_all_coinbase_products(_context) do
+    {:ok, hist_coinbase} = Historical.start_link(products: all_coinbase_products())
+    [hist_coinbase: hist_coinbase]
+  end
+
+  defp start_historical_with_trades_for_all_products(_context) do
+    products = all_products()
+    {:ok, hist} = Historical.start_link(products: products)
+    Enum.each(products, & send(hist, {:new_trade, build_valid_trade(&1)}))
+    [hist_with_trades: hist]
   end
 end
