@@ -12,7 +12,7 @@ defmodule Poeticoins.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Poeticoins.PubSub},
 
-      {Poeticoins.Historical, products: Poeticoins.Exchanges.available_products(), name: Poeticoins.Historical},
+      {Poeticoins.Historical, name: Poeticoins.Historical},
       {Poeticoins.Exchanges.Supervisor, name: Poeticoins.Exchanges.Supervisor},
 
       # Start the Endpoint (http/https)

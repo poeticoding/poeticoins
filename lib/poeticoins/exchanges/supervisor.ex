@@ -1,16 +1,13 @@
 defmodule Poeticoins.Exchanges.Supervisor do
   use Supervisor
+  alias Poeticoins.Exchanges
 
   def start_link(opts) do
-    Supervisor.start_link(__MODULE__, :ok, opts)
+    {clients, opts} = Keyword.pop(opts, :clients, Exchanges.clients())
+    Supervisor.start_link(__MODULE__, clients, opts)
   end
 
-  def init(:ok) do
-    children = [
-      Poeticoins.Exchanges.CoinbaseClient,
-      Poeticoins.Exchanges.BitstampClient
-    ]
-
-    Supervisor.init(children, strategy: :one_for_one)
+  def init(clients) do
+    Supervisor.init(clients, strategy: :one_for_one)
   end
 end
