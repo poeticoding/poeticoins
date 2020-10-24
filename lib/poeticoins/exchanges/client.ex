@@ -38,6 +38,16 @@ defmodule Poeticoins.Exchanges.Client do
         {:noreply, client}
       end
 
+      def child_spec(opts) do
+        {currency_pairs, opts} =
+          Keyword.pop(opts, :currency_pairs, available_currency_pairs())
+        %{
+          id: __MODULE__,
+          start: {unquote(__MODULE__), :start_link, [__MODULE__, currency_pairs, opts]}
+        }
+      end
+
+
       defoverridable [handle_ws_message: 2]
     end
   end

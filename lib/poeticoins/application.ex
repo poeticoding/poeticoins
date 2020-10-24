@@ -11,6 +11,10 @@ defmodule Poeticoins.Application do
       PoeticoinsWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: Poeticoins.PubSub},
+
+      {Poeticoins.Historical, name: Poeticoins.Historical},
+      {Poeticoins.Exchanges.Supervisor, name: Poeticoins.Exchanges.Supervisor},
+
       # Start the Endpoint (http/https)
       PoeticoinsWeb.Endpoint
       # Start a worker by calling: Poeticoins.Worker.start_link(arg)
