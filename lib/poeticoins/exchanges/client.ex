@@ -1,5 +1,6 @@
 defmodule Poeticoins.Exchanges.Client do
   use GenServer
+  require Logger
 
   @type t :: %__MODULE__{
     module: module(),
@@ -85,6 +86,7 @@ defmodule Poeticoins.Exchanges.Client do
   def handle_info({:gun_upgrade, conn, _ref, ["websocket"], _headers},
                   %{conn: conn}=client)
   do
+    Logger.info("#{inspect(client.module)} ws connected. Subscribing...")
     subscribe(client)
     {:noreply, client}
   end
