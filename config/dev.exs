@@ -65,3 +65,11 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
+
+config :poeticoins, :children, [
+  PoeticoinsWeb.Telemetry,
+  {Phoenix.PubSub, name: Poeticoins.PubSub},
+  {Poeticoins.Historical, name: Poeticoins.Historical},
+  {Poeticoins.Exchanges.Supervisor, name: Poeticoins.Exchanges.Supervisor},
+  PoeticoinsWeb.Endpoint
+]
