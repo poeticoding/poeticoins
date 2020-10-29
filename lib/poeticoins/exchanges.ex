@@ -1,6 +1,8 @@
 defmodule Poeticoins.Exchanges do
   alias Poeticoins.{Product, Trade}
 
+  @poeticoins_pubsub Application.get_env(:poeticoins, PoeticoinsWeb.Endpoint) |> Keyword.fetch!(:pubsub_server)
+
   @clients [
     Poeticoins.Exchanges.CoinbaseClient,
     Poeticoins.Exchanges.BitstampClient
@@ -8,7 +10,6 @@ defmodule Poeticoins.Exchanges do
 
   @available_products (for client <- @clients, pair <- client.available_currency_pairs() do
     Product.new(client.exchange_name(), pair)
-
   end)
 
   @spec clients() :: [module()]
@@ -19,17 +20,17 @@ defmodule Poeticoins.Exchanges do
 
   @spec subscribe(Product.t()) :: :ok | {:error, term()}
   def subscribe(product) do
-    Phoenix.PubSub.subscribe(Poeticoins.PubSub, topic(product))
+    Phoenix.PubSub.subscribe(@poeticoins_pubsub, topic(product))
   end
 
   @spec unsubscribe(Product.t()) :: :ok | {:error, term()}
   def unsubscribe(product) do
-    Phoenix.PubSub.unsubscribe(Poeticoins.PubSub, topic(product))
+    Phoenix.PubSub.unsubscribe(@poeticoins_pubsub, topic(product))
   end
 
   @spec broadcast(Trade.t()) :: :ok | {:error, term()}
   def broadcast(trade) do
-    Phoenix.PubSub.broadcast(Poeticoins.PubSub, topic(trade.product), {:new_trade, trade})
+    Phoenix.PubSub.broadcast(@poeticoins_pubsub, topic(trade.product), {:new_trade, trade})
   end
 
   @spec topic(Product.t()) :: String.t()
