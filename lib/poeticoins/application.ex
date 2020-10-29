@@ -6,23 +6,8 @@ defmodule Poeticoins.Application do
   use Application
 
   def start(_type, _args) do
-    children = [
-      # Start the Telemetry supervisor
-      PoeticoinsWeb.Telemetry,
-      # Start the PubSub system
-      {Phoenix.PubSub, name: Poeticoins.PubSub},
+    children = Application.get_env(:poeticoins, :children)
 
-      {Poeticoins.Historical, name: Poeticoins.Historical},
-      {Poeticoins.Exchanges.Supervisor, name: Poeticoins.Exchanges.Supervisor},
-
-      # Start the Endpoint (http/https)
-      PoeticoinsWeb.Endpoint
-      # Start a worker by calling: Poeticoins.Worker.start_link(arg)
-      # {Poeticoins.Worker, arg}
-    ]
-
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Poeticoins.Supervisor]
     Supervisor.start_link(children, opts)
   end
@@ -33,4 +18,5 @@ defmodule Poeticoins.Application do
     PoeticoinsWeb.Endpoint.config_change(changed, removed)
     :ok
   end
+
 end
