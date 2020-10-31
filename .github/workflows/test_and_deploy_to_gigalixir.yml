@@ -1,0 +1,28 @@
+name: Test and Deploy
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        otp: [23.1]
+        elixir: [1.11.1]
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-elixir@v1
+      with: 
+        otp-version: ${{ matrix.otp }}
+        elixir-version: ${{ matrix.elixir }}
+    
+    - name: Setup Node
+      uses: actions/setup-node@v1
+      with:
+        node-version: 14.15.0
+
+    - name: Install deps
+      run: |
+        mix deps.get
+        npm install --prefix assets
+    - run: mix test
