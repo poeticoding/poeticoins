@@ -72,6 +72,22 @@ defmodule Poeticoins.HistoricalTest do
 
   end
 
+  describe "clear/1" do
+    test "clears the trades map", %{hist_all: historical} do
+      bitstamp_product = bitstamp_btc_usd_product()
+
+      bitstamp_product
+        |> build_valid_trade()
+        |> broadcast_trade()
+
+      refute is_nil( Historical.get_last_trade(historical, bitstamp_product) )
+
+      Historical.clear(historical)
+
+      assert is_nil( Historical.get_last_trade(historical, bitstamp_product) )
+    end
+  end
+
 
   defp all_products, do: Exchanges.available_products()
   defp broadcast_trade(trade), do: Exchanges.broadcast(trade)

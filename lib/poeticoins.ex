@@ -1,4 +1,5 @@
 defmodule Poeticoins do
+  defdelegate available_products(), to: Poeticoins.Exchanges
 
   defdelegate subscribe_to_trades(product),
     to: Poeticoins.Exchanges, as: :subscribe

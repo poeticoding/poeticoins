@@ -1,0 +1,21 @@
+<table>
+  <thead>
+    <th>Traded at</th>
+    <th>Exchange</th>
+    <th>Currency</th>
+    <th>Price</th>
+    <th>Volume</th>
+  </thead>
+  <tbody>
+  <%= for trade <- @trades, not is_nil(trade) do%>
+    <tr>
+      <td><%= trade.traded_at %></td>
+      <td><%= trade.product.exchange_name %></td>
+      <td><%= trade.product.currency_pair %></td>
+      <td><%= trade.price %></td>
+      <td><%= trade.volume %></td>
+    </tr>
+
+  <% end %>
+  </tbody>
+</table>
