@@ -1,0 +1,68 @@
+name: Test and Deploy
+on: push
+
+jobs:
+  test: 
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        otp: [23.1]
+        elixir: [1.11.1]
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-elixir@v1
+      with: 
+        otp-version: ${{ matrix.otp }}
+        elixir-version: ${{ matrix.elixir }}
+    - name: Setup Node
+      uses: actions/setup-node@v1
+      with:
+        node-version: 14.15.0
+
+    - name: Cache Elixir deps
+      uses: actions/cache@v1
+      id: deps-cache
+      with:
+        path: deps
+        key: ${{ runner.os }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+
+    - name: Cache Elixir _build
+      uses: actions/cache@v1
+      id: build-cache
+      with:
+        path: _build
+        key: ${{ runner.os }}-build-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }} 
+
+    - name: Cache Node modules
+      uses: actions/cache@v1
+      id: node-cache
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('assets/**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Install deps
+      run: |
+        mix deps.get
+        npm install --prefix assets
+        
+    - run: mix test
+  deploy:
+    needs: test
+    
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+    
+    - uses: actions/checkout@v2
+      with:
+        ref: master
+        fetch-depth: 0
+    
+    - uses: mhanberg/gigalixir-action@v0.4.0
+      with:
+        GIGALIXIR_USERNAME: ${{ secrets.GIGALIXIR_USERNAME }}
+        GIGALIXIR_PASSWORD: ${{ secrets.GIGALIXIR_PASSWORD }}
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        GIGALIXIR_APP: ${{ secrets.GIGALIXIR_APP }}
