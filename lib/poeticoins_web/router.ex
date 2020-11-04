@@ -17,8 +17,8 @@ defmodule PoeticoinsWeb.Router do
   scope "/", PoeticoinsWeb do
     pipe_through :browser
 
-    live "/", PageLive, :index
-    get "/products", ProductController, :index
+    #live "/", PageLive, :index
+    get "/", ProductController, :index
   end
 
   # Other scopes may use custom stacks.
