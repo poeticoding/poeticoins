@@ -16,16 +16,6 @@ config :poeticoins, PoeticoinsWeb.Endpoint,
 # Do not print debug messages in production
 config :logger, level: :info
 
-config :poeticoins, :children, [
-  PoeticoinsWeb.Telemetry,
-  {Phoenix.PubSub, name: Poeticoins.PubSub},
-  {Poeticoins.Historical, name: Poeticoins.Historical},
-  {Poeticoins.Exchanges.Supervisor, name: Poeticoins.Exchanges.Supervisor},
-  PoeticoinsWeb.Endpoint
-]
-
-
-
 # ## SSL Support
 #
 # To get SSL working, you will need to add the `https` key
