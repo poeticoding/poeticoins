@@ -3,6 +3,8 @@ defmodule PoeticoinsWeb.CryptoDashboardLive do
   alias Poeticoins.Product
 
   def mount(_params, _session, socket) do
+    IO.inspect(self(), label: "MOUNT")
+
     product = Product.new("coinbase", "BTC-USD")
     trade = Poeticoins.get_last_trade(product)
 
@@ -15,20 +17,21 @@ defmodule PoeticoinsWeb.CryptoDashboardLive do
   end
 
   def render(assigns) do
+    IO.inspect(self(), label: "RENDER")
+
     ~L"""
-    <h2>
+    <p><b>Product</b>:
       <%= @trade.product.exchange_name %> -
       <%= @trade.product.currency_pair %>
-    </h2>
-    <p>
-      <%= @trade.traded_at %> -
-      <%= @trade.price %> -
-      <%= @trade.volume %>
     </p>
+    <p><b>Traded at</b>: <%= @trade.traded_at %></p>
+    <p><b>Price</b>: <%= @trade.price %></p>
+    <p><b>Volume</b>: <%= @trade.volume %></p>
     """
   end
 
   def handle_info({:new_trade, trade}, socket) do
+    IO.inspect(self(), label: "NEW TRADE")
     socket = assign(socket, :trade, trade)
     {:noreply, socket}
   end
