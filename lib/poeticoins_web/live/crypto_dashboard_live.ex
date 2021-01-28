@@ -1,6 +1,7 @@
 defmodule PoeticoinsWeb.CryptoDashboardLive do
   use PoeticoinsWeb, :live_view
   alias Poeticoins.Product
+  import PoeticoinsWeb.ProductHelpers
 
   def mount(_params, _session, socket) do
     socket = assign(socket, trades: %{}, products: [])
@@ -21,30 +22,39 @@ defmodule PoeticoinsWeb.CryptoDashboardLive do
 
       <button type="submit" phx-disable-with="Loading...">Add product</button>
     </form>
-    <form action="#" phx-change="filter-products">
-      <input phx-debounce="300" type="text" name="search">
-    </form>
-    <table>
-      <thead>
-        <th>Traded at</th>
-        <th>Exchange</th>
-        <th>Currency</th>
-        <th>Price</th>
-        <th>Volume</th>
-      </thead>
-      <tbody>
-      <%= for product <- @products, trade = @trades[product], not is_nil(trade) do%>
-        <tr>
-          <td><%= trade.traded_at %></td>
-          <td><%= trade.product.exchange_name %></td>
-          <td><%= trade.product.currency_pair %></td>
-          <td><%= trade.price %></td>
-          <td><%= trade.volume %></td>
-        </tr>
+    <%= for product <- @products, trade = @trades[product], not is_nil(trade) do%>
+      <div class="product-component">
+        <div class="currency-container">
+          <img class="icon" src="<%= crypto_icon(@socket, product) %>" />
+          <div class="crypto-name">
+            <%= crypto_name(product) %>
+          </div>
+        </div>
 
-      <% end %>
-      </tbody>
-    </table>
+        <div class="price-container">
+          <ul class="fiat-symbols">
+            <%= for fiat <- fiat_symbols() do %>
+              <li class="
+              <%= if fiat_symbol(product) == fiat, do: "active" %>
+                "><%= fiat %></li>
+            <% end %>
+         </ul>
+
+          <div class="price">
+            <%= trade.price %>
+            <%= fiat_character(product) %>
+          </div>
+        </div>
+
+        <div class="exchange-name">
+          <%= product.exchange_name %>
+        </div>
+
+        <div class="trade-time">
+          <%= human_datetime(trade.traded_at) %>
+        </div>
+      </div>
+    <% end %>
     """
   end
 
