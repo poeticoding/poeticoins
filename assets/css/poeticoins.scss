@@ -224,16 +224,19 @@ body {
 
   select.select-product {
     // display: none;
+    background: white;
     font-family: 'Nunito';
+    margin-top:5px;
     height: 40px;
     border: 0px;
     font-size: 0.8em;
     vertical-align: middle;
   }
 
-  input[type="submit"] {
+  button[type="submit"] {
     background-color: rgb(62, 145, 255);
     border: 0;
+    padding:0;
     vertical-align: middle;
     color: white;
     height: 40px;
