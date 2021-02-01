@@ -1,0 +1,279 @@
+$blue-text-color: #262f67;
+
+@-webkit-keyframes blinker {
+  from {
+    background-color: auto;
+    color: white;
+  }
+  to {
+    background-color: white;
+    color: $blue-text-color
+  }
+}
+.blink {
+	text-decoration: blink;
+	-webkit-animation-name: blinker;
+	-webkit-animation-duration: 0.2s;
+	-webkit-animation-iteration-count:1;
+	-webkit-animation-timing-function:ease-in-out;
+	-webkit-animation-direction: alternate;
+}
+
+
+html {
+  background: url(/images/background.svg) no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+}
+
+footer {
+  color: white;
+  font-family: 'Nunito', sans-serif;
+}
+
+body {
+  color: white;
+  font-family: 'Nunito', sans-serif;
+}
+
+
+.dashboard-container {
+  position: relative;
+  width: 95%;
+  max-width: 95%;
+  
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.powered-by-poeticoding {
+  position: absolute;
+  vertical-align: middle;
+  bottom: 10px;
+  right: 10px;
+  font-size: 0.6em;
+
+  img.logo {
+    vertical-align: middle;
+    width: 120px;
+  }
+}
+
+.product-components-container {
+  display: inline-flex;
+  flex-flow: row wrap;
+  // justify-content: flex-start;
+  align-content: flex-start;
+  align-items: flex-start;
+
+  flex-grow: 0;
+
+  width: 100%;
+
+  // margin-left: auto;
+  // margin-right: auto;
+
+  // text-align: center;
+  // text-align: -moz-center;
+  // text-align: -webkit-center;
+}
+
+
+.product-component {
+  position: relative;
+  font-size: 17px;
+
+  width: 310px;
+  height: 200px;
+  
+  margin: 20px;
+  padding: 15px;
+  padding-top: 0px;
+  
+  border-radius: 5px;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(180deg, #1C498D 0%, #272D63 100%);
+
+  button.remove {
+    position: absolute;
+    font-family: 'Nunito', 'Courier New';
+    right: 0px;
+    top: 0px;
+    width: 32px;
+    height: 32px;
+
+    border: none;
+    background-color: transparent;
+    color: white;
+    opacity: 0.8;    
+
+    &:hover {
+      font-weight: bold;
+      cursor: pointer;
+    }
+  }  
+
+  .currency-container {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    
+    img.icon {
+      display: inline-block;
+      vertical-align: middle;
+    
+      width: 32px;
+      height: 32px;
+      background-color: #B8D2EA;
+      border: 3px solid #B8D2EA;
+      border-radius: 50%;
+    }
+    .crypto-name {
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 0.5em;
+      font-weight: 800;
+      font-size: 1.2em;      
+    }
+  }
+  .product-id {
+    position: absolute;
+    left: 15px;
+    font-size: 1em;
+  }
+
+  .price-container {
+    position: absolute;
+    top: 10%;
+    right: 15px;
+
+    ul.fiat-symbols {
+      text-align: right;
+      margin: 0px;
+      // margin-bottom: 5px;
+
+      li {
+        &.active {
+          color: white;
+        }
+        text-transform: uppercase;
+        color: #616A8B; //disabled by default
+        display: inline-block;
+        font-size: 0.7em;
+        margin-left: 3px;
+        font-weight: 400;
+      }
+      
+    }
+
+    .price {
+      font-weight: 800;
+      font-size: 1.5em;
+      text-align: right;
+    }
+
+  }
+
+  .exchange-name {
+    position: absolute;  
+    bottom: 15px;
+    left: 15px;
+    font-size: 1em;
+    font-weight: 800;
+  }
+
+  .trade-time {
+    position: absolute;  
+    bottom: 15px;
+    right: 15px;
+    font-size: 0.9em;
+  }
+}
+
+
+.poeticoins-toolbar {
+  width: 100%;
+  height: 74px;
+
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 20px;
+
+  background: #1C498D;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 5px;
+
+  .title {
+    float: left;
+    margin-top: 15px;
+    margin-left: 5%;
+    text-transform: uppercase;
+    color: rgb(88, 175, 255);
+    vertical-align: middle;
+    font-size: 2em;
+    font-weight: 800;
+  }
+
+  form {
+    float: right;
+    vertical-align: middle;
+    margin-top: 15px;
+    margin-right: 5%;
+  }
+
+  select.select-product {
+    // display: none;
+    background: white;
+    font-family: 'Nunito';
+    margin-top:5px;
+    height: 40px;
+    border: 0px;
+    font-size: 0.8em;
+    vertical-align: middle;
+  }
+
+  button[type="submit"] {
+    background-color: rgb(62, 145, 255);
+    border: 0;
+    padding:0;
+    vertical-align: middle;
+    color: white;
+    height: 40px;
+    width: 40px;
+    font-size: 2em;
+    border-radius: 10px;
+  }
+}
+
+.chart-container {
+  margin-top: 80px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.powered-by {
+  position: fixed;
+  top: 60%;
+  right: 0;
+  transform: rotate(-90deg) translateY(77px);
+  
+  background: #1C498D;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+
+  border-radius: 5px;
+  padding: 7px 10px 4px 10px;
+
+  .text {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 10px;
+    margin-right: 7px;
+  }
+
+  img.poeticoding {
+    display: inline-block;
+    vertical-align: middle;
+    width: 100px;
+  }
+}

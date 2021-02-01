@@ -1,6 +1,7 @@
 defmodule PoeticoinsWeb.CryptoDashboardLive do
   use PoeticoinsWeb, :live_view
   alias Poeticoins.Product
+  import PoeticoinsWeb.ProductHelpers
 
   def mount(_params, _session, socket) do
     socket = assign(socket, trades: %{}, products: [])
@@ -9,42 +10,66 @@ defmodule PoeticoinsWeb.CryptoDashboardLive do
 
   def render(assigns) do
     ~L"""
-    <form action="#" phx-submit="add-product">
-      <select name="product_id">
-        <option selected disabled>Add a Crypto Product</option>
-        <%= for product <- Poeticoins.available_products() do %>
-          <option value="<%= to_string(product) %>">
-            <%= product.exchange_name %> - <%= product.currency_pair %>
-          </option>
-        <% end %>
-      </select>
+    <div class="poeticoins-toolbar">
+      <div class="title">Poeticoins</div>
 
-      <button type="submit" phx-disable-with="Loading...">Add product</button>
-    </form>
-    <form action="#" phx-change="filter-products">
-      <input phx-debounce="300" type="text" name="search">
-    </form>
-    <table>
-      <thead>
-        <th>Traded at</th>
-        <th>Exchange</th>
-        <th>Currency</th>
-        <th>Price</th>
-        <th>Volume</th>
-      </thead>
-      <tbody>
-      <%= for product <- @products, trade = @trades[product], not is_nil(trade) do%>
-        <tr>
-          <td><%= trade.traded_at %></td>
-          <td><%= trade.product.exchange_name %></td>
-          <td><%= trade.product.currency_pair %></td>
-          <td><%= trade.price %></td>
-          <td><%= trade.volume %></td>
-        </tr>
+      <form action="#" phx-submit="add-product">
+        <select name="product_id" class="select-product">
 
+          <option selected disabled>Add a Crypto Product</option>
+
+          <%= for {exchange_name, products} <- grouped_products_by_exchange_name() do %>
+            <optgroup label="<%= exchange_name %>">
+              <%= for product <- products do %>
+                <option value="<%= to_string(product) %>">
+                  <%= crypto_name(product)%>
+                  -
+                  <%= fiat_character(product) %>
+                </option>
+              <% end %>
+            </optgroup>
+          <% end %>
+        </select>
+
+        <button type="submit" phx-disable-with="Loading...">+</button>
+      </form>
+    </div>
+
+    <div class="product-components">
+      <%= for product <- @products, trade = @trades[product] do%>
+        <div class="product-component">
+          <div class="currency-container">
+            <img class="icon" src="<%= crypto_icon(@socket, product) %>" />
+            <div class="crypto-name">
+              <%= crypto_name(product) %>
+            </div>
+          </div>
+
+          <div class="price-container">
+            <ul class="fiat-symbols">
+              <%= for fiat <- fiat_symbols() do %>
+                <li class="
+                <%= if fiat_symbol(product) == fiat, do: "active" %>
+                  "><%= fiat %></li>
+              <% end %>
+          </ul>
+
+            <div class="price">
+              <%= trade.price %>
+              <%= fiat_character(product) %>
+            </div>
+          </div>
+
+          <div class="exchange-name">
+            <%= product.exchange_name %>
+          </div>
+
+          <div class="trade-time">
+            <%= human_datetime(trade.traded_at) %>
+          </div>
+        </div>
       <% end %>
-      </tbody>
-    </table>
+    </div>
     """
   end
 
@@ -99,5 +124,10 @@ defmodule PoeticoinsWeb.CryptoDashboardLive do
     else
       put_flash(socket, :error, "The product was already added")
     end
+  end
+
+  defp grouped_products_by_exchange_name do
+    Poeticoins.available_products()
+    |> Enum.group_by(& &1.exchange_name)
   end
 end
