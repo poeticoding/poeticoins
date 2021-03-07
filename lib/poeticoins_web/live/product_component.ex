@@ -40,11 +40,21 @@ defmodule PoeticoinsWeb.ProductComponent do
             <%= if fiat_symbol(@product) == fiat, do: "active" %>
               "><%= fiat %></li>
           <% end %>
-      </ul>
+       </ul>
 
         <div class="price">
           <%= @trade.price %>
           <%= fiat_character(@product) %>
+        </div>
+      </div>
+
+      <div class="chart-component">
+        <div phx-hook="Chart"
+            id="product-chart-<%= to_string(@product) %>"
+            data-price="<%= @trade.price %>"
+            data-traded-at="<%= DateTime.to_unix(@trade.traded_at, :millisecond) %>"
+            >
+          <div class="chart-container"></div>
         </div>
       </div>
 

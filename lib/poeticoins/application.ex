@@ -13,7 +13,8 @@ defmodule Poeticoins.Application do
         {Phoenix.PubSub, name: Poeticoins.PubSub},
         {Poeticoins.Historical, name: Poeticoins.Historical},
         PoeticoinsWeb.Endpoint
-      ] ++ exchanges_supervisor_unless_testing()
+      ] ++
+        exchanges_supervisor_unless_testing()
 
     opts = [strategy: :one_for_one, name: Poeticoins.Supervisor]
     Supervisor.start_link(children, opts)
