@@ -6,7 +6,13 @@ defmodule Poeticoins.Application do
   use Application
 
   def start(_type, _args) do
-    children = Application.get_env(:poeticoins, :children)
+    children = [
+      PoeticoinsWeb.Telemetry,
+      {Phoenix.PubSub, name: Poeticoins.PubSub},
+      {Poeticoins.Historical, name: Poeticoins.Historical},
+      {Poeticoins.Exchanges.Supervisor, name: Poeticoins.Exchanges.Supervisor},
+      PoeticoinsWeb.Endpoint
+    ]
 
     opts = [strategy: :one_for_one, name: Poeticoins.Supervisor]
     Supervisor.start_link(children, opts)
@@ -18,5 +24,4 @@ defmodule Poeticoins.Application do
     PoeticoinsWeb.Endpoint.config_change(changed, removed)
     :ok
   end
-
 end
