@@ -2,16 +2,39 @@ defmodule PoeticoinsWeb.CryptoDashboardLive do
   use PoeticoinsWeb, :live_view
   alias Poeticoins.Product
   import PoeticoinsWeb.ProductHelpers
+  alias PoeticoinsWeb.Router.Helpers, as: Routes
 
   def mount(_params, _session, socket) do
     socket =
-      assign(socket,
+      socket
+      |> assign(
         products: [],
         timezone: get_timezone_from_connection(socket)
       )
 
     {:ok, socket}
   end
+
+  def handle_params(%{"products" => product_ids} = _params, _uri, socket) do
+    new_products = Enum.map(product_ids, &product_from_string/1)
+    diff = List.myers_difference(socket.assigns.products, new_products)
+    products_to_remove = diff |> Keyword.get_values(:del) |> List.flatten()
+    products_to_insert = diff |> Keyword.get_values(:ins) |> List.flatten()
+
+    socket =
+      Enum.reduce(products_to_remove, socket, fn product, socket ->
+        remove_product(socket, product)
+      end)
+
+    socket =
+      Enum.reduce(products_to_insert, socket, fn product, socket ->
+        add_product(socket, product)
+      end)
+
+    {:noreply, socket}
+  end
+
+  def handle_params(_params, _uri, socket), do: {:noreply, socket}
 
   def render(assigns) do
     ~L"""
@@ -59,8 +82,17 @@ defmodule PoeticoinsWeb.CryptoDashboardLive do
   end
 
   def handle_event("add-product", %{"product_id" => product_id} = _params, socket) do
-    product = product_from_string(product_id)
-    socket = maybe_add_product(socket, product)
+    product_ids =
+      socket.assigns.products
+      |> Enum.map(&to_string/1)
+      |> Kernel.++([product_id])
+      |> Enum.uniq()
+
+    socket =
+      push_patch(socket,
+        to: Routes.live_path(socket, __MODULE__, products: product_ids)
+      )
+
     {:noreply, socket}
   end
 
@@ -69,8 +101,16 @@ defmodule PoeticoinsWeb.CryptoDashboardLive do
   end
 
   def handle_event("remove-product", %{"product-id" => product_id} = _params, socket) do
-    product = product_from_string(product_id)
-    socket = update(socket, :products, &List.delete(&1, product))
+    product_ids =
+      socket.assigns.products
+      |> Enum.map(&to_string/1)
+      |> Kernel.--([product_id])
+
+    socket =
+      push_patch(socket,
+        to: Routes.live_path(socket, __MODULE__, products: product_ids)
+      )
+
     {:noreply, socket}
   end
 
@@ -86,14 +126,11 @@ defmodule PoeticoinsWeb.CryptoDashboardLive do
     |> update(:products, &(&1 ++ [product]))
   end
 
-  @spec maybe_add_product(Phoenix.LiveView.Socket.t(), Product.t()) :: Phoenix.LiveView.Socket.t()
-  defp maybe_add_product(socket, product) do
-    if product not in socket.assigns.products do
-      socket
-      |> add_product(product)
-    else
-      socket
-    end
+  def remove_product(socket, product) do
+    Poeticoins.unsubcribe_from_trades(product)
+
+    socket
+    |> update(:products, &(&1 -- [product]))
   end
 
   defp grouped_products_by_exchange_name do
