@@ -114,11 +114,6 @@ defmodule PoeticoinsWeb.CryptoDashboardLive do
     {:noreply, socket}
   end
 
-  defp product_from_string(product_id) do
-    [exchange_name, currency_pair] = String.split(product_id, ":")
-    Product.new(exchange_name, currency_pair)
-  end
-
   def add_product(socket, product) do
     Poeticoins.subscribe_to_trades(product)
 
