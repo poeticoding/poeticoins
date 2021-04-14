@@ -1,6 +1,5 @@
 defmodule PoeticoinsWeb.CryptoDashboardLive do
   use PoeticoinsWeb, :live_view
-  alias Poeticoins.Product
   import PoeticoinsWeb.ProductHelpers
   alias PoeticoinsWeb.Router.Helpers, as: Routes
 
