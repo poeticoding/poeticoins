@@ -20,6 +20,7 @@ defmodule PoeticoinsWeb.Router do
     # live "/", PageLive, :index
     # get "/", ProductController, :index
     live "/", CryptoDashboardLive
+    live "/products/:id", ProductLive
   end
 
   # Other scopes may use custom stacks.
