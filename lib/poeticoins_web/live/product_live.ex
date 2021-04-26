@@ -23,9 +23,20 @@ defmodule PoeticoinsWeb.ProductLive do
 
   def render(%{trade: trade} = assigns) when not is_nil(trade) do
     ~L"""
-    <div>
-      <h1><%= fiat_character(@product) %> <%= @trade.price %></h1>
-      <p>Traded at <%= human_datetime(@trade.traded_at) %></p>
+    <div class="row">
+      <div class="column"
+          phx-hook="StockChart"
+          phx-update="ignore"
+
+          id="product-chart"
+          data-product-id="<%= to_string(@product) %>"
+          data-product-name="<%= @product.exchange_name %> <%= @product.currency_pair %>"
+          data-trade-timestamp="<%= DateTime.to_unix(@trade.traded_at, :millisecond) %>"
+          data-trade-volume="<%= @trade.volume %>"
+          data-trade-price="<%= @trade.price %>"
+      >
+        <div id="stockchart-container"></div>
+      </div>
     </div>
     """
   end
@@ -33,7 +44,7 @@ defmodule PoeticoinsWeb.ProductLive do
   def render(assigns) do
     ~L"""
     <div>
-      <h1><%= fiat_character(@product) %> ...</h1>
+      <h1>Waiting for a trade...</h1>
     </div>
     """
   end
