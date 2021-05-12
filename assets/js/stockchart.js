@@ -1,7 +1,18 @@
 
 import Highcharts from 'highcharts/highstock';
-import darkTheme from 'highcharts/themes/dark-unica'
+
+/*** Daniel Kuku blue theme ***/
+import darkTheme from 'highcharts/themes/dark-blue'
 darkTheme(Highcharts)
+Highcharts.theme = {
+  colors: ['#58afff', '#58afff', '#ED561B', '#DDDF00', '#24CBE5', '#64E572',
+    '#FF9655', '#FFF263', '#6AF9C4'],
+  chart: {
+    backgroundColor: 'transparent'
+  },
+};
+Highcharts.setOptions(Highcharts.theme);
+/***********/
 
 
 let StockChartHook = {
@@ -61,6 +72,9 @@ let StockChartHook = {
       this.chart.series[0].addPoint([trade.timestamp, trade.price]);
       this.chart.series[1].addPoint([trade.timestamp, trade.volume]);
     }
+  },
+  destroyed() {
+
   },
   getTradeFromDataset() {
     return {
