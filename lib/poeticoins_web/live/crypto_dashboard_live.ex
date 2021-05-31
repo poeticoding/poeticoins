@@ -3,7 +3,7 @@ defmodule PoeticoinsWeb.CryptoDashboardLive do
   alias Poeticoins.Product
 
   def mount(_params, _session, socket) do
-    socket = assign(socket, trades: %{}, products: [])
+    socket = assign(socket, trades: %{}, products: [], filter_products: & &1)
     {:ok, socket}
   end
 
@@ -33,7 +33,7 @@ defmodule PoeticoinsWeb.CryptoDashboardLive do
         <th>Volume</th>
       </thead>
       <tbody>
-      <%= for product <- @products, trade = @trades[product], not is_nil(trade) do%>
+      <%= for product <- @products, @filter_products.(product), trade = @trades[product], not is_nil(trade) do%>
         <tr>
           <td><%= trade.traded_at %></td>
           <td><%= trade.product.exchange_name %></td>
@@ -66,14 +66,13 @@ defmodule PoeticoinsWeb.CryptoDashboardLive do
   end
 
   def handle_event("filter-products", %{"search" => search}, socket) do
-    products =
-      Poeticoins.available_products()
-      |> Enum.filter(fn product ->
+    socket =
+      assign(socket, :filter_products, fn product ->
         String.downcase(product.exchange_name) =~ String.downcase(search) or
           String.downcase(product.currency_pair) =~ String.downcase(search)
       end)
 
-    {:noreply, assign(socket, :products, products)}
+    {:noreply, socket}
   end
 
   def add_product(socket, product) do
