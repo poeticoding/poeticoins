@@ -84,6 +84,7 @@ defmodule Poeticoins.HistoricalTest do
     Exchanges.broadcast(trade)
     # wait 50ms so that the historical can get and process the message
     # Warning! In general it's better to avoid sleeps in tests!
+    # sleeps tend to make tests brittle!
     Process.sleep(50)
   end
 
@@ -118,6 +119,7 @@ defmodule Poeticoins.HistoricalTest do
     Enum.each(products, &send(pid, {:new_trade, build_valid_trade(&1)}))
     # wait 50ms so that the historical can get and process the message
     # Warning! In general it's better to avoid sleeps in tests!
+    # sleeps tend to make tests brittle!
     Process.sleep(50)
 
     pid
