@@ -35,9 +35,8 @@ defmodule Poeticoins.Historical do
     :ets.select(@ets_table_name, ms)
   end
 
-  @spec clear(pid() | atom()) :: :ok
-  def clear(pid \\ __MODULE__) do
-    GenServer.call(pid, :clear)
+  def clear do
+    :ets.delete_all_objects(@ets_table_name)
   end
 
   # :products
@@ -60,10 +59,5 @@ defmodule Poeticoins.Historical do
   def handle_info({:new_trade, trade}, historical) do
     :ets.insert(@ets_table_name, {trade.product, trade})
     {:noreply, historical}
-  end
-
-  def handle_call(:clear, _from, historical) do
-    historical = %{historical | trades: %{}}
-    {:reply, :ok, historical}
   end
 end

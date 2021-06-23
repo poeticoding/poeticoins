@@ -8,3 +8,9 @@ config :poeticoins, PoeticoinsWeb.Endpoint,
 
 # Print only warnings and errors during test
 config :logger, level: :warn
+
+config :poeticoins, :children, [
+  PoeticoinsWeb.Telemetry,
+  {Phoenix.PubSub, name: Poeticoins.PubSub},
+  PoeticoinsWeb.Endpoint
+]

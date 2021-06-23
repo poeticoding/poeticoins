@@ -21,6 +21,14 @@ config :poeticoins, PoeticoinsWeb.Endpoint,
     ]
   ]
 
+config :poeticoins, :children, [
+  PoeticoinsWeb.Telemetry,
+  {Phoenix.PubSub, name: Poeticoins.PubSub},
+  {Poeticoins.Historical, name: Poeticoins.Historical},
+  PoeticoinsWeb.Endpoint,
+  {Poeticoins.Exchanges.Supervisor, name: Poeticoins.Exchanges.Supervisor}
+]
+
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed
