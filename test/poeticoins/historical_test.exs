@@ -1,102 +1,101 @@
 defmodule Poeticoins.HistoricalTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   alias Poeticoins.{Historical, Exchanges, Product, Trade}
 
-
-  setup :start_fresh_historical_with_all_products
-  setup :start_fresh_historical_with_all_coinbase_products
-  setup :start_historical_with_trades_for_all_products
-
   describe "get_last_trade/2" do
-    test "gets the most recent trade for a product", %{hist_all: historical} do
-      product = Product.new("coinbase", "BTC-USD")
-      assert nil == Historical.get_last_trade(historical, product)
+    test "gets the most recent trade for a product" do
+      start_fresh_historical_with_all_products()
 
-      #broadcasting the trade
+      product = Product.new("coinbase", "BTC-USD")
+      assert nil == Historical.get_last_trade(product)
+
+      # broadcasting the trade
       trade = build_valid_trade(product)
       broadcast_trade(trade)
-      assert trade == Historical.get_last_trade(historical, product)
+
+      assert trade == Historical.get_last_trade(product)
 
       new_trade = build_valid_trade(product)
       assert :gt == DateTime.compare(new_trade.traded_at, trade.traded_at)
 
       broadcast_trade(new_trade)
-      assert new_trade == Historical.get_last_trade(historical, product)
-
+      assert new_trade == Historical.get_last_trade(product)
     end
   end
 
   describe "get_last_trades/2" do
-    test "given a list of products, returns a list of most recent trades", %{hist_with_trades: historical} do
+    test "given a list of products, returns a list of most recent trades" do
+      start_historical_with_trades_for_all_products()
+
       products =
         Exchanges.available_products()
         |> Enum.shuffle()
 
-      assert products ==
-        historical
-        |> Historical.get_last_trades(products)
-        |> Enum.map(fn %Trade{product: p} -> p end)
+      assert MapSet.new(products) ==
+               products
+               |> Historical.get_last_trades()
+               |> Enum.map(fn %Trade{product: p} -> p end)
+               |> MapSet.new()
     end
 
-    test "nil in the returned list when the Historical doesn't have a trade for product", %{hist_with_trades: historical} do
+    test "filtered list of trade is returned" do
+      start_historical_with_trades_for_all_products()
+
       products = [
         Product.new("coinbase", "BTC-USD"),
         Product.new("coinbase", "invalid_pair"),
         Product.new("bitstamp", "btcusd")
       ]
 
-      assert [%Trade{}, nil, %Trade{}] = Historical.get_last_trades(historical, products)
+      assert MapSet.new([Product.new("coinbase", "BTC-USD"), Product.new("bitstamp", "btcusd")]) ==
+               products
+               |> Historical.get_last_trades()
+               |> Enum.map(fn %Trade{product: p} -> p end)
+               |> MapSet.new()
     end
   end
 
-  test "keeps track of the trades for only the :products passed when started", %{hist_coinbase: hist_coinbase} do
+  test "keeps track of the trades for only the :products passed when started" do
+    start_fresh_historical_with_all_coinbase_products()
+
     coinbase_product = coinbase_btc_usd_product()
 
     # bitstamp trades aren't received by the historical that follows only coinbase trades
     bitstamp_product = bitstamp_btc_usd_product()
-    assert nil == Historical.get_last_trade(hist_coinbase, bitstamp_product)
+    assert nil == Historical.get_last_trade(bitstamp_product)
 
     bitstamp_product
     |> build_valid_trade()
     |> broadcast_trade()
 
-    assert nil == Historical.get_last_trade(hist_coinbase, bitstamp_product)
-
+    assert nil == Historical.get_last_trade(bitstamp_product)
 
     # broadcasting a coinbase trade, should be received
-    assert nil == Historical.get_last_trade(hist_coinbase, coinbase_product)
+    assert nil == Historical.get_last_trade(coinbase_product)
 
     coinbase_trade = build_valid_trade(coinbase_product)
     broadcast_trade(coinbase_trade)
-    assert coinbase_trade == Historical.get_last_trade(hist_coinbase, coinbase_product)
-
+    assert coinbase_trade == Historical.get_last_trade(coinbase_product)
   end
-
-  describe "clear/1" do
-    test "clears the trades map", %{hist_all: historical} do
-      bitstamp_product = bitstamp_btc_usd_product()
-
-      bitstamp_product
-        |> build_valid_trade()
-        |> broadcast_trade()
-
-      refute is_nil( Historical.get_last_trade(historical, bitstamp_product) )
-
-      Historical.clear(historical)
-
-      assert is_nil( Historical.get_last_trade(historical, bitstamp_product) )
-    end
-  end
-
 
   defp all_products, do: Exchanges.available_products()
-  defp broadcast_trade(trade), do: Exchanges.broadcast(trade)
+
+  defp broadcast_trade(trade) do
+    Exchanges.broadcast(trade)
+    # wait 50ms so that the historical can get and process the message
+    # Warning! In general it's better to avoid sleeps in tests!
+    # sleeps tend to make tests brittle!
+    Process.sleep(50)
+  end
+
   defp coinbase_btc_usd_product, do: Product.new("coinbase", "BTC-USD")
   defp bitstamp_btc_usd_product, do: Product.new("bitstamp", "btcusd")
+
   defp all_coinbase_products do
     Exchanges.available_products()
-    |> Enum.filter(& &1.exchange_name == "coinbase")
+    |> Enum.filter(&(&1.exchange_name == "coinbase"))
   end
+
   defp build_valid_trade(product) do
     %Trade{
       product: product,
@@ -106,21 +105,23 @@ defmodule Poeticoins.HistoricalTest do
     }
   end
 
-
-  defp start_fresh_historical_with_all_products(_context) do
-    {:ok, hist_all} = Historical.start_link(products: all_products())
-    [hist_all: hist_all]
+  defp start_fresh_historical_with_all_products() do
+    start_supervised!({Historical, products: all_products()})
   end
 
-  defp start_fresh_historical_with_all_coinbase_products(_context) do
-    {:ok, hist_coinbase} = Historical.start_link(products: all_coinbase_products())
-    [hist_coinbase: hist_coinbase]
+  defp start_fresh_historical_with_all_coinbase_products() do
+    start_supervised!({Historical, products: all_coinbase_products()})
   end
 
-  defp start_historical_with_trades_for_all_products(_context) do
+  defp start_historical_with_trades_for_all_products() do
     products = all_products()
-    {:ok, hist} = Historical.start_link(products: products)
-    Enum.each(products, & send(hist, {:new_trade, build_valid_trade(&1)}))
-    [hist_with_trades: hist]
+    pid = start_supervised!({Historical, products: all_products()})
+    Enum.each(products, &send(pid, {:new_trade, build_valid_trade(&1)}))
+    # wait 50ms so that the historical can get and process the message
+    # Warning! In general it's better to avoid sleeps in tests!
+    # sleeps tend to make tests brittle!
+    Process.sleep(50)
+
+    pid
   end
 end
