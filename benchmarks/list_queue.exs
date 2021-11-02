@@ -18,19 +18,19 @@ new_elements = Enum.map(1001..1101, & "#{&1}")
 
 Benchee.run(
   %{
-  #   "list: append 1001 and drop 1" => fn ->
-  #     list_append_and_drop_fun.("1001", list)
-  #   end,
-  #   "queue: in 1001 and drop 1" => fn ->
-  #     queue_insert_and_drop_fun.("1001", queue)
-  #   end
+    "list: append 1001 and drop 1" => fn ->
+      list_append_and_drop_fun.("1001", list)
+    end,
+    "queue: in 1001 and drop 1" => fn ->
+      queue_insert_and_drop_fun.("1001", queue)
+    end
 
-    # "list: hundred appends and drops" => fn ->
-    #   Enum.reduce(new_elements, list, list_append_and_drop_fun)
-    # end,
-    # "queue: hundred appends and drops" => fn ->
-    #   Enum.reduce(new_elements, queue, queue_insert_and_drop_fun)
-    # end
+    "list: hundred appends and drops" => fn ->
+      Enum.reduce(new_elements, list, list_append_and_drop_fun)
+    end,
+    "queue: hundred appends and drops" => fn ->
+      Enum.reduce(new_elements, queue, queue_insert_and_drop_fun)
+    end,
 
     "convert a queue to a list" => fn ->
       :queue.to_list(queue)
