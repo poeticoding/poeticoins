@@ -5,7 +5,7 @@ defmodule PoeticoinsWeb.ProductLive do
   def mount(%{"id" => product_id} = _params, _session, socket) do
     product = product_from_string(product_id)
     trade = Poeticoins.get_last_trade(product)
-    trades = get_trade_history()
+    trades = get_trade_history(product)
 
     socket =
       assign(socket,
@@ -36,6 +36,7 @@ defmodule PoeticoinsWeb.ProductLive do
           data-trade-timestamp="<%= DateTime.to_unix(@trade.traded_at, :millisecond) %>"
           data-trade-volume="<%= @trade.volume %>"
           data-trade-price="<%= @trade.price %>"
+          data-init-trades="<%= get_chart_init_data(@product) %>"
       >
         <div id="stockchart-container"></div>
       </div>
@@ -88,7 +89,17 @@ defmodule PoeticoinsWeb.ProductLive do
     DateTime.to_unix(dt, :millisecond)
   end
 
-  defp get_trade_history do
-    []
+  defp get_trade_history(product) do
+    product
+    |> Poeticoins.Historical.get_trades()
+    |> Enum.reverse()
+    |> Enum.take(10)
+  end
+
+  defp get_chart_init_data(product) do
+    product
+    |> Poeticoins.Historical.get_trades()
+    |> Enum.map(& [timestamp(&1.traded_at), &1.price, &1.volume])
+    |> Jason.encode!()
   end
 end

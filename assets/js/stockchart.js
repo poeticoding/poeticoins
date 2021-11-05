@@ -1,4 +1,3 @@
-
 import Highcharts from 'highcharts/highstock';
 
 /*** Daniel Kuku blue theme ***/
@@ -17,7 +16,11 @@ Highcharts.setOptions(Highcharts.theme);
 
 let StockChartHook = {
   mounted() {
-    this.trades = [];
+    let trades = JSON.parse(this.el.dataset.initTrades),
+        pricesData = trades.map(trade => [trade[0], parseFloat(trade[1])]),
+        volumesData = trades.map(trade => [trade[0], parseFloat(trade[2])]);
+      
+
     this.chart = Highcharts.stockChart('stockchart-container', {
       title: {
         text: this.el.dataset.productName
@@ -25,7 +28,7 @@ let StockChartHook = {
 
       series: [{
         name: this.el.dataset.productName,
-        data: [],
+        data: pricesData,
         tooltip: {
           valueDecimals: 2
         }
@@ -33,7 +36,7 @@ let StockChartHook = {
       {
         type: 'column',
         name: 'Volume',
-        data: [],
+        data: volumesData,
         yAxis: 1
       }],
 
