@@ -39,7 +39,8 @@ defmodule PoeticoinsWeb.Router do
 
     scope "/" do
       pipe_through :browser
-      live_dashboard "/dashboard", metrics: PoeticoinsWeb.Telemetry
+      get "/", ProductController, :index
+      # live_dashboard "/dashboard", metrics: PoeticoinsWeb.Telemetry
     end
   end
 end
