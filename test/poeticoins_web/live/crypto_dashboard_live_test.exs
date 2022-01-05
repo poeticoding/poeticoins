@@ -6,8 +6,6 @@ defmodule PoeticoinsWeb.CryptoDashboardLiveTest do
   setup :setup_historical
 
   defp setup_historical(context) do
-    Historical.clear()
-
     Poeticoins.available_products()
     |> Enum.each(fn product ->
       product
@@ -26,10 +24,4 @@ defmodule PoeticoinsWeb.CryptoDashboardLiveTest do
       volume: "0.10000"
     }
   end
-
-  # test "disconnected and connected render", %{conn: conn} do
-  #   {:ok, page_live, disconnected_html} = live(conn, "/")
-  #   assert disconnected_html =~ "Welcome to Phoenix!"
-  #   assert render(page_live) =~ "Welcome to Phoenix!"
-  # end
 end
