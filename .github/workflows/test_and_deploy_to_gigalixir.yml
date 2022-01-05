@@ -52,7 +52,7 @@ jobs:
     needs: test
     
     if: github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     
     - uses: actions/checkout@v2
@@ -60,7 +60,11 @@ jobs:
         ref: master
         fetch-depth: 0
     
-    - uses: mhanberg/gigalixir-action@v0.4.0
+    - uses: actions/setup-python@v2
+      with: 
+        python-version: "3.8.1"
+
+    - uses: mhanberg/gigalixir-action@v0.4.3
       with:
         GIGALIXIR_USERNAME: ${{ secrets.GIGALIXIR_USERNAME }}
         GIGALIXIR_PASSWORD: ${{ secrets.GIGALIXIR_PASSWORD }}

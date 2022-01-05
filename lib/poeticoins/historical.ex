@@ -1,27 +1,31 @@
 defmodule Poeticoins.Historical do
   use GenServer
   alias Poeticoins.{Product, Trade, Exchanges}
+  alias Poeticoins.Historical.TimeSeries
 
   @type t() :: %__MODULE__{
-    products: [Product.t()],
-    trades: %{Product.t() => Trade.t()}
-  }
-  defstruct [:products, :trades]
+          products: [Product.t()],
+          series: %{ Product.t() => TimeSeries.t()}
+        }
 
-  @spec get_last_trade(pid() | atom(), Product.t()) :: Trade.t() | nil
-  def get_last_trade(pid\\__MODULE__, product) do
+  defstruct [:products, :series]
+
+
+  @spec get_last_trade(pid | atom, Product.t()) :: Trade.t() | nil
+  def get_last_trade(pid \\ __MODULE__, product) do
     GenServer.call(pid, {:get_last_trade, product})
   end
 
-  @spec get_last_trades(pid() | atom(), [Product.t()]) :: [Trade.t() | nil]
-  def get_last_trades(pid\\__MODULE__, products) do
+  @spec get_last_trades(pid | atom, [Product.t()]) :: [Trade.t()]
+  def get_last_trades(pid \\__MODULE__, products) do
     GenServer.call(pid, {:get_last_trades, products})
   end
 
-  @spec clear(pid() | atom()) :: :ok
-  def clear(pid\\__MODULE__) do
-    GenServer.call(pid, :clear)
+  @spec get_trades(pid | atom, Product.t) :: [Trade.t()]
+  def get_trades(pid \\__MODULE__, product) do
+    GenServer.call(pid, {:get_trades, product})
   end
+
 
   # :products
   def start_link(opts) do
@@ -30,7 +34,7 @@ defmodule Poeticoins.Historical do
   end
 
   def init(products) do
-    historical = %__MODULE__{products: products, trades: %{}}
+    historical = %__MODULE__{products: products, series: %{}}
     {:ok, historical, {:continue, :subscribe}}
   end
 
@@ -40,24 +44,52 @@ defmodule Poeticoins.Historical do
   end
 
   def handle_info({:new_trade, trade}, historical) do
-    updated_trades = Map.put(historical.trades, trade.product, trade)
-    updated_historical = %{historical | trades: updated_trades}
+    updated_historical = add_trade(historical, trade)
     {:noreply, updated_historical}
   end
 
   def handle_call({:get_last_trade, product}, _from, historical) do
-    trade = Map.get(historical.trades, product)
+    trade = get_timeseries(historical, product, &TimeSeries.last/1)
     {:reply, trade, historical}
   end
 
   def handle_call({:get_last_trades, products}, _from, historical) do
-    trades = Enum.map(products, &Map.get(historical.trades, &1))
+    trades =
+      products
+      |> Enum.map(fn product -> get_timeseries(historical, product, &TimeSeries.last/1) end)
+      |> Enum.filter(& not is_nil(&1))
+
     {:reply, trades, historical}
   end
 
-  def handle_call(:clear, _from, historical) do
-    historical = %{historical | trades: %{}}
-    {:reply, :ok, historical}
+  def handle_call({:get_trades, product}, _from, historical) do
+    trades = get_timeseries(historical, product, &TimeSeries.to_list/1)
+    {:reply, trades, historical}
   end
 
+
+  @spec get_timeseries(t(), Product.t, function()) :: term | nil
+  defp get_timeseries(historical, product, fun) do
+    historical.series
+    |> Map.get(product)
+    |> case do
+      nil -> nil
+      ts -> fun.(ts)
+    end
+  end
+
+
+  @spec add_trade(t(), Trade.t) :: t()
+  defp add_trade(%{series: series}=historical, trade) do
+    updated_series =
+      if Map.has_key?(series, trade.product) do
+        Map.update!(series, trade.product, & TimeSeries.add(&1, trade))
+      else
+        ts =
+          TimeSeries.new()
+          |> TimeSeries.add(trade)
+        Map.put(series, trade.product, ts)
+      end
+    %{historical | series: updated_series}
+  end
 end
