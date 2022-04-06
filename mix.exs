@@ -46,8 +46,8 @@ defmodule Poeticoins.MixProject do
       {:plug_cowboy, "~> 2.0"},
 
       {:gun, "~> 1.3"},
-      {:cowlib, "~> 2.9.1", override: true}
-
+      {:cowlib, "~> 2.9.1", override: true},
+      {:certifi, "~> 2.9"},
     ]
   end
 
